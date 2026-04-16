@@ -1,338 +1,696 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Quiz Hub | Economics & Sustainability</title>
+    <title>Economics & Sustainability | Mastery Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --accent-primary: #8b5cf6;
-            --accent-secondary: #ec4899;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
         body {
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(circle at top left, #1e1b4b, #0f172a, #020617);
-            background-attachment: fixed;
-            color: #f8fafc;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #f1f5f9;
+            margin: 0;
             overflow-x: hidden;
         }
 
-        /* Glassmorphism Classes */
         .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 1rem;
-        }
-
-        .glass-card {
             background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all 0.3s ease;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .glass-card:hover {
-            background: rgba(255, 255, 255, 0.06);
-            transform: translateY(-2px);
-            border-color: var(--accent-primary);
+        .animate-blob {
+            animation: blob 7s infinite;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
         }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent-primary);
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
             border-radius: 10px;
         }
 
-        /* Layout */
-        .sidebar {
-            width: 280px;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            z-index: 50;
-            transition: transform 0.3s ease;
-        }
-
-        .main-content {
-            margin-left: 280px;
-            padding: 2rem;
-            max-width: 900px;
-            margin-right: auto;
-        }
-
-        @media (max-width: 1024px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.active { transform: translateX(0); }
-            .main-content { margin-left: 0; padding: 1rem; }
-            .mobile-toggle { display: block; }
-        }
-
-        /* Question States */
         .option-btn {
-            display: block;
-            width: 100%;
-            text-align: left;
-            padding: 1rem;
-            margin: 0.5rem 0;
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.02);
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .option-btn:hover:not(.disabled) {
-            background: rgba(139, 92, 246, 0.1);
-            border-color: var(--accent-primary);
+        .sidebar-active { transform: translateX(0) !important; }
+
+        .week-chip.active {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: #8b5cf6;
+            color: #c084fc;
         }
 
-        .option-btn.selected {
-            background: var(--accent-primary);
-            color: white;
-            border-color: var(--accent-primary);
+        .week-card {
+            position: relative;
+            background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            overflow: hidden;
         }
 
-        .option-btn.correct {
-            background: #10b981 !important;
-            border-color: #059669 !important;
-            color: white;
+        .week-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.15), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
         }
 
-        .option-btn.wrong {
-            background: #ef4444 !important;
-            border-color: #dc2626 !important;
-            color: white;
+        .week-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(139, 92, 246, 0.1);
         }
 
-        .explanation {
-            border-left: 4px solid var(--accent-primary);
-            margin-top: 1rem;
-            padding: 0.75rem 1rem;
-            background: rgba(139, 92, 246, 0.05);
-            display: none;
-        }
-
-        .active-section-btn {
-            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
-            color: white;
-        }
-
-        .timer-badge {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
-        }
+        .week-card:hover::before { opacity: 1; }
+        .week-icon-container { transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .week-card:hover .week-icon-container { transform: scale(1.1) rotate(5deg); }
     </style>
 </head>
-<body class="bg-slate-950">
+<body class="custom-scrollbar">
 
-    <!-- Mobile Header -->
-    <div class="lg:hidden fixed top-0 left-0 right-0 z-[60] glass border-none rounded-none p-4 flex justify-between items-center">
-        <button id="mobile-menu-btn" class="p-2 text-2xl text-violet-400">
-            <i class="fas fa-bars"></i>
-        </button>
-        <h1 class="font-bold text-lg bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">ECON QUIZ</h1>
-        <div id="mobile-timer" class="text-sm font-mono bg-violet-900/40 px-3 py-1 rounded-full border border-violet-500/30">00:00:00</div>
+    <!-- Background Decoration -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-600/20 blur-[120px] rounded-full animate-blob"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-pink-600/10 blur-[140px] rounded-full animate-blob animation-delay-2000"></div>
+        <div class="absolute top-[20%] right-[5%] w-[30%] h-[30%] bg-blue-600/10 blur-[100px] rounded-full animate-blob animation-delay-4000"></div>
     </div>
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="sidebar glass border-y-0 border-l-0 rounded-none flex flex-col">
-        <div class="p-6 border-b border-white/10">
-            <h1 class="text-2xl font-bold bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-                Study Portal
-            </h1>
-            <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">NPTEL Economics Course</p>
-        </div>
-        
-        <div class="flex-1 overflow-y-auto p-4 space-y-2" id="sidebar-nav">
-            <!-- Navigation links will be injected here -->
-            <div class="text-xs font-semibold text-slate-500 mt-4 mb-2 ml-2">ASSIGNMENTS</div>
-            <button onclick="scrollToWeek('week0')" class="nav-link w-full text-left p-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3">
-                <span class="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-400">0</span>
-                <span>Week 0: Foundation</span>
-            </button>
-            <!-- Repeating for other weeks... -->
-        </div>
-
-        <div class="p-6 border-t border-white/10">
-            <div class="flex items-center gap-3 text-sm text-slate-400 mb-4">
-                <i class="fas fa-check-circle text-green-400"></i>
-                <span id="score-counter">Score: 0/0</span>
-            </div>
-            <button onclick="resetQuiz()" class="w-full py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition text-sm">
-                Reset Progress
-            </button>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Desktop Header / Timer -->
-        <div class="hidden lg:flex justify-between items-center mb-10">
-            <div>
-                <h2 class="text-3xl font-bold">Infinite Learning Stream</h2>
-                <p class="text-slate-400">Scroll to explore all weekly assessments</p>
-            </div>
-            <div id="desktop-timer" class="timer-badge glass px-6 py-3 border-violet-500/30 flex items-center gap-4">
-                <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span class="font-mono text-2xl font-medium" id="timer-text">00:00:00</span>
-            </div>
-        </div>
-
-        <div id="quiz-container" class="space-y-12 pb-20">
-            <!-- Quiz sections will be injected here -->
-        </div>
-    </main>
+    <!-- Main App Container -->
+    <div id="app" class="relative z-10 min-h-screen flex flex-col"></div>
 
     <script>
-        const quizData = [
-            {
-                id: 'week0',
-                title: 'Week 0: Principles of Economics',
-                questions: [
-                    { q: "Which of these is true?", options: ["Wants are unlimited, resources are unlimited", "Wants are limited, resources are limited", "Wants are unlimited, resources are limited", "Wants are limited, resources are unlimited"], correct: 2 },
-                    { q: "The property of society getting the most it can from its scarce resources is a definition of:", options: ["efficiency", "equality", "prudence", "sustainability"], correct: 0 },
-                    { q: "Something that induces a person to act is a definition of:", options: ["enticement", "attraction", "incentive", "occupation"], correct: 2 },
-                    { q: "Input costs that require an outlay of money are:", options: ["explicit costs", "implicit costs", "opportunity costs", "phantom costs"], correct: 0 },
-                    { q: "The ability of an individual to own and exercise control over scarce resources is known as:", options: ["property rights", "resource rights", "individual rights", "social rights"], correct: 0 },
-                    { q: "Whatever must be given up to obtain some item is a definition of:", options: ["explicit costs", "implicit costs", "opportunity costs", "phantom costs"], correct: 2 },
-                    { q: "Most of rational thinking occurs:", options: ["before the margin", "at the margin", "after the margin", "none of these"], correct: 1 },
-                    { q: "Rational decision making compares:", options: ["average benefits to average costs", "average benefits to marginal costs", "marginal benefits to average costs", "marginal benefits to marginal costs"], correct: 3 },
-                    { q: "An economy that allocates resources through the decentralized decisions of many firms and households is a:", options: ["urban economy", "rural economy", "planned economy", "market economy"], correct: 3 },
-                    { q: "The ability to produce a good at a lower opportunity cost than another producer is a definition of:", options: ["real advantage", "monetary advantage", "comparative advantage", "opportunity advantage"], correct: 2 }
-                ]
-            },
-            {
-                id: 'week1',
-                title: 'Week 1: Foundations & Definitions',
-                questions: [
-                    { q: "In the word root for conservation, 'servare' stands for:", options: ["together", "to keep", "house", "manage"], correct: 1 },
-                    { q: "Phillips curve shows the relation between:", options: ["profit and loss", "market price and selling price", "inflation and unemployment rate", "electricity consumption and fresh output"], correct: 2 },
-                    { q: "The ability of a single economic actor to have a substantial influence on market prices is:", options: ["price power", "market power", "externality", "economic power"], correct: 1 },
-                    { q: "An increase in the overall level of prices in the economy is:", options: ["inflation", "deflation", "stagflation", "pro-inflation"], correct: 0 },
-                    { q: "In the word root for conservation, 'con' stands for:", options: ["together", "to keep", "house", "manage"], correct: 0 },
-                    { q: "Input costs that do NOT require an outlay of money are:", options: ["explicit costs", "implicit costs", "opportunity costs", "phantom costs"], correct: 1 },
-                    { q: "In the word root for Economics, 'nemein' stands for:", options: ["together", "to keep", "house", "manage"], correct: 3 },
-                    { q: "The property of distributing economic prosperity uniformly among members of society is:", options: ["efficiency", "equality", "prudence", "sustainability"], correct: 1 },
-                    { q: "In the word root for Economics, 'oikos' stands for:", options: ["together", "to keep", "house", "manage"], correct: 2 },
-                    { q: "Fluctuations in economic activity, such as employment and production, are referred to as:", options: ["business cycles", "economic cycles", "production cycles", "market cycles"], correct: 0 }
-                ]
-            },
-            {
-                id: 'week2',
-                title: 'Week 2: Sustainability & Malthusian Theory',
-                questions: [
-                    { q: "Which of these is a pillar of sustainability?", options: ["social sustainability", "industrial sustainability", "agricultural sustainability", "trans-boundary sustainability"], correct: 0 },
-                    { q: "Which of these is NOT a pillar of sustainability?", options: ["environmental sustainability", "economic sustainability", "trans-boundary sustainability", "social sustainability"], correct: 2 },
-                    { q: "Which of these is a positive check according to Malthus?", options: ["late marriage", "war", "celibacy", "moral restraint"], correct: 1 },
-                    { q: "The Trinity explosion of 1945 is taken as the beginning of the:", options: ["Holocene", "Cenozoic", "Anthropocene", "Neozoic"], correct: 2 },
-                    { q: "The demographic transition sees a society move from:", options: ["high birth, low death to low birth, high death", "low birth, high death to low birth, low death", "high birth, high death to low birth, low death", "high birth, high death to low birth, high death"], correct: 2 },
-                    { q: "The logistic growth equation curve is:", options: ["J-shaped", "S-shaped", "U-shaped", "L-shaped"], correct: 1 },
-                    { q: "According to Malthusian model:", options: ["Pop: geometric, Food: arithmetic", "Pop: arithmetic, Food: geometric", "Both arithmetic", "Both geometric"], correct: 0 },
-                    { q: "The book 'An Essay on the Principle of Population' was written by:", options: ["Darwin", "Malthus", "Spencer", "Dawkins"], correct: 1 },
-                    { q: "The quantum of human impacts can be written as:", options: ["I = P + A + T", "I = P x A x T", "I = P / (A x T)", "I = P + A x T"], correct: 1 },
-                    { q: "Which of these is a preventive check according to Malthus?", options: ["foresight", "vice", "misery", "flood"], correct: 0 }
-                ]
-            },
-            {
-                id: 'week4',
-                title: 'Week 4: Ecology & Habitats',
-                questions: [
-                    { q: "Which of these is NOT a physical factor of habitat?", options: ["soil", "moisture", "predators", "temperature"], correct: 2 },
-                    { q: "The correct process of habitat fragmentation:", options: ["Forest -> Dissection -> Perforation -> Fragmentation -> Attrition", "Forest -> Fragmentation -> Dissection -> Attrition", "Forest -> Perforation -> Attrition -> Fragmentation", "None of these"], correct: 0 },
-                    { q: "A root-mean-treatment plant is an example of:", options: ["phytoremediation", "biological control", "biomagnification", "bioaccumulation"], correct: 0 },
-                    { q: "Liebig's law of the minimum states:", options: ["Rate is limited by the factor in least amount relative to requirement", "Rate is limited by maximum factor", "Tolerance limits determine rate", "None of these"], correct: 0 },
-                    { q: "Movement of individuals away from home to survive and reproduce is:", options: ["immigration", "migration", "dispersal", "drifting"], correct: 2 },
-                    { q: "Which of these is a stochastic factor?", options: ["birth rate", "death rate", "population structure", "environmental fluctuation"], correct: 3 },
-                    { q: "Movement of lions across the Gir landscape is an example of:", options: ["diffusion", "secular dispersal", "jump dispersal", "drifting"], correct: 0 },
-                    { q: "The acronym HIPPO does NOT include:", options: ["habitat loss", "invasive species", "pollution", "pollinator"], correct: 3 },
-                    { q: "I tried growing vegetables under my teak plantation, but they died. This is:", options: ["autophagy", "stenophagy", "allelopathy", "auto-toxicity"], correct: 2 },
-                    { q: "Regular seasonal movement of animals along fixed routes is:", options: ["immigration", "migration", "dispersal", "drifting"], correct: 1 }
-                ]
-            },
-            {
-                id: 'week5',
-                title: 'Week 5: Goods & Externalities',
-                questions: [
-                    { q: "Fire protection is a:", options: ["private good", "club good", "common resource", "public good"], correct: 1 },
-                    { q: "The ability to produce a good using fewer inputs than another producer is:", options: ["comparative advantage", "absolute advantage", "production advantage", "resource advantage"], correct: 1 },
-                    { q: "Which is NOT a method of internalization of externalities?", options: ["tradable pollution permits", "charitable social causes", "command and control policies", "free market"], correct: 3 },
-                    { q: "Public goods are:", options: ["excludable, rival", "non-excludable, rival", "excludable, non-rival", "non-excludable, non-rival"], correct: 3 },
-                    { q: "Club goods are:", options: ["excludable, rival", "non-excludable, rival", "excludable, non-rival", "non-excludable, non-rival"], correct: 2 },
-                    { q: "The impact of one person's actions on the well-being of a bystander is:", options: ["actor-observer effect", "externality", "internality", "benefit principle"], correct: 1 },
-                    { q: "A simplified description of a system or process to assist calculations is a:", options: ["equation", "model", "philosophy", "process dynamics"], correct: 1 },
-                    { q: "A measure of happiness or satisfaction is:", options: ["utility", "safety", "credits", "value"], correct: 0 },
-                    { q: "Clothing is a:", options: ["private good", "club good", "common resource", "public good"], correct: 0 },
-                    { q: "Private goods are:", options: ["excludable, rival", "non-excludable, rival", "excludable, non-rival", "non-excludable, non-rival"], correct: 0 }
-                ]
+        const QUIZ_DATA = {
+            0: { title: "Week 0: Foundation", icon: "anchor", questions: [
+                { q: "Which of these is true?", options: ["Wants are unlimited, resources are unlimited", "Wants are limited, resources are limited", "Wants are unlimited, resources are limited", "Wants are limited, resources are unlimited"], answer: "Wants are unlimited, resources are limited" },
+                { q: "The property of society getting the most it can from its scarce resources is a definition of:", options: ["efficiency", "equality", "prudence", "sustainability"], answer: "efficiency" },
+                { q: "Something that induces a person to act is a definition of:", options: ["enticement", "attraction", "incentive", "occupation"], answer: "incentive" },
+                { q: "Input costs that require an outlay of money are:", options: ["explicit costs", "implicit costs", "opportunity costs", "phantom costs"], answer: "explicit costs" },
+                { q: "The ability of an individual to own and exercise control over scarce resources is:", options: ["property rights", "resource rights", "individual rights", "social rights"], answer: "property rights" },
+                { q: "Whatever must be given up to obtain some item is a definition of:", options: ["explicit costs", "implicit costs", "opportunity costs", "phantom costs"], answer: "opportunity costs" },
+                { q: "Most of rational thinking occurs:", options: ["before the margin", "at the margin", "after the margin", "none of these"], answer: "at the margin" },
+                { q: "Rational decision making compares:", options: ["average benefits to average costs", "average benefits to marginal costs", "marginal benefits to average costs", "marginal benefits to marginal costs"], answer: "marginal benefits to marginal costs" },
+                { q: "An economy that allocates resources through decentralized decisions is:", options: ["urban economy", "rural economy", "planned economy", "market economy"], answer: "market economy" },
+                { q: "The ability to produce a good at a lower opportunity cost is:", options: ["real advantage", "monetary advantage", "comparative advantage", "opportunity advantage"], answer: "comparative advantage" }
+            ]},
+            1: { title: "Week 1: Intro & Roots", icon: "book-open", questions: [
+                { q: "In the word root for conservation, 'servare' stands for:", options: ["together", "to keep", "house", "manage"], answer: "to keep" },
+                { q: "Phillips curve shows the relation between:", options: ["profit and loss", "market price and selling price", "inflation and unemployment rate", "electricity consumption and output"], answer: "inflation and unemployment rate" },
+                { q: "The ability of a single economic actor to have a substantial influence on market prices is:", options: ["price power", "market power", "externality", "economic power"], answer: "market power" },
+                { q: "An increase in the overall level of prices in the economy is:", options: ["inflation", "deflation", "stagflation", "pro-inflation"], answer: "inflation" },
+                { q: "In the word root for conservation, 'con' stands for:", options: ["together", "to keep", "house", "manage"], answer: "together" },
+                { q: "Input costs that do not require an outlay of money are:", options: ["explicit costs", "implicit costs", "opportunity costs", "phantom costs"], answer: "implicit costs" },
+                { q: "In the word root for Economics, 'nemein' stands for:", options: ["together", "to keep", "house", "manage"], answer: "manage" },
+                { q: "The property of distributing economic prosperity uniformly among members is:", options: ["efficiency", "equality", "prudence", "sustainability"], answer: "equality" },
+                { q: "In the word root for Economics, 'oikos' stands for:", options: ["together", "to keep", "house", "manage"], answer: "house" },
+                { q: "Fluctuations in economic activity, such as employment and production, are:", options: ["business cycles", "economic cycles", "production cycles", "market cycles"], answer: "business cycles" }
+            ]},
+            2: { title: "Week 2: Sustainability", icon: "globe", questions: [
+                { q: "Which of these is a pillar of sustainability?", options: ["social sustainability", "industrial sustainability", "agricultural sustainability", "trans-boundary sustainability"], answer: "social sustainability" },
+                { q: "Which of these is NOT a pillar of sustainability?", options: ["environmental sustainability", "economic sustainability", "trans-boundary sustainability", "social sustainability"], answer: "trans-boundary sustainability" },
+                { q: "Which of these is a positive check according to Malthus?", options: ["late marriage", "war", "celibacy", "moral restraint"], answer: "war" },
+                { q: "The Trinity explosion of 1945 is taken as the beginning of the:", options: ["Holocene", "Cenozoic", "Anthropocene", "Neozoic"], answer: "Anthropocene" },
+                { q: "The demographic transition sees a society move from:", options: ["high birth/low death to low birth/high death", "low birth/high death to low birth/low death", "high birth/high death to low birth/low death", "high birth/high death to low birth/high death"], answer: "high birth/high death to low birth/low death" },
+                { q: "The logistic growth equation curve is:", options: ["J-shaped", "S-shaped", "U-shaped", "L-shaped"], answer: "S-shaped" },
+                { q: "According to Malthusian model, population grows in:", options: ["geometric progression", "arithmetic progression", "exponential decay", "harmonic progression"], answer: "geometric progression" },
+                { q: "The book 'An Essay on the Principle of Population' was written by:", options: ["Darwin", "Malthus", "Spencer", "Dawkins"], answer: "Malthus" },
+                { q: "The quantum of human impacts can be written as:", options: ["I = P + A + T", "I = P x A x T", "I = P / (A x T)", "I = P + A x T"], answer: "I = P x A x T" },
+                { q: "Which of these is a preventive check according to Malthus?", options: ["foresight", "vice", "misery", "flood"], answer: "foresight" }
+            ]},
+            3: { title: "Week 3: Assessment", icon: "activity", questions: [
+                { q: "The potential or capacity of a material to have adverse effects on living organisms is:", options: ["vulnerability", "susceptibility", "sustainability", "toxicity"], answer: "toxicity" },
+                { q: "Which determines which projects require a full or partial impact assessment study?", options: ["screening", "scoping", "reporting", "review"], answer: "screening" },
+                { q: "Macrodebris in the context of plastic debris has fragments of size:", options: ["> 20 mm", "5 - 20 mm", "< 5 mm", "< 1 mm"], answer: "> 20 mm" },
+                { q: "Any changes in systems that inadvertently increase vulnerability to climatic stimuli is:", options: ["adaptation", "mitigation", "maladaptation", "malmitigation"], answer: "maladaptation" },
+                { q: "The extent to which a chemical is available for uptake into an organism is:", options: ["traceability", "bioaccumulation", "biomagnification", "bioavailability"], answer: "bioavailability" },
+                { q: "Hydrocarbons derived directly from mineral oils are:", options: ["petrogenic hydrocarbons", "pyrogenic hydrocarbons", "biogenic hydrocarbons", "chemogenic hydrocarbons"], answer: "petrogenic hydrocarbons" },
+                { q: "The 'relative effect of exposure' is:", options: ["vulnerability", "sensitivity", "sustainability", "toxicity"], answer: "sensitivity" },
+                { q: "The increasing concentration of a substance at successively higher levels in a food chain is:", options: ["traceability", "bioaccumulation", "biomagnification", "bio-response"], answer: "biomagnification" },
+                { q: "Mesodebris in the context of plastic debris has fragments of size:", options: ["> 20 mm", "5 - 20 mm", "< 5 mm", "< 1 mm"], answer: "5 - 20 mm" },
+                { q: "What is used to identify which potential impacts are relevant to assess?", options: ["screening", "scoping", "reporting", "review"], answer: "scoping" }
+            ]},
+            4: { title: "Week 4: Ecology", icon: "tree-pine", questions: [
+                { q: "Which of these is NOT a physical factor of habitat?", options: ["soil", "moisture", "predators", "temperature"], answer: "predators" },
+                { q: "Which correctly represents the process of habitat fragmentation and loss?", options: ["Original Forest -> Dissection -> Perforation -> Fragmentation -> Attrition", "Original Forest -> Attrition -> Fragmentation -> Perforation", "Original Forest -> Dissection -> Perforation -> Attrition", "Forest -> Fragmentation -> Attrition"], answer: "Original Forest -> Dissection -> Perforation -> Fragmentation -> Attrition" },
+                { q: "A root-mean-treatment plant is an example of:", options: ["phytoremediation", "biological control", "biomagnification", "bioaccumulation"], answer: "phytoremediation" },
+                { q: "The rate of biological process is limited by factor in least amount refers to:", options: ["Liebig's law of the minimum", "Liebig's law of the maximum", "Shelford's law of tolerance", "Shelford's law of intolerance"], answer: "Liebig's law of the minimum" },
+                { q: "Movements of individuals away from home to survive and reproduce is:", options: ["immigration", "migration", "dispersal", "drifting"], answer: "dispersal" },
+                { q: "Which of these is a stochastic factor?", options: ["birth rate", "death rate", "population structure", "environmental fluctuation"], answer: "environmental fluctuation" },
+                { q: "The movement of lions across the Gir landscape is an example of:", options: ["diffusion", "secular dispersal", "jump dispersal", "drifting"], answer: "diffusion" },
+                { q: "The acronym HIPPO does NOT include:", options: ["habitat loss", "invasive species", "pollution", "pollinator"], answer: "pollinator" },
+                { q: "Growing vegetables under teak plantation but the plants died. This is:", options: ["autophagy", "stenophagy", "auto-toxicity", "allelopathy"], answer: "allelopathy" },
+                { q: "The regular seasonal movement of animals along fixed routes is:", options: ["immigration", "migration", "dispersal", "drifting"], answer: "migration" }
+            ]},
+            5: { title: "Week 5: Goods", icon: "shopping-bag", questions: [
+                { q: "Fire protection is a:", options: ["private good", "club good", "common resource", "public good"], answer: "club good" },
+                { q: "The ability to produce a good using fewer inputs than another producer is:", options: ["comparative advantage", "absolute advantage", "production advantage", "resource advantage"], answer: "absolute advantage" },
+                { q: "Which is NOT a method of internalization of externalities?", options: ["tradable pollution permits", "charitable social causes", "command and control policies", "free market"], answer: "free market" },
+                { q: "Public goods are:", options: ["excludable, rival", "non-excludable, rival", "excludable, non-rival", "non-excludable, non-rival"], answer: "non-excludable, non-rival" },
+                { q: "Club goods are:", options: ["excludable, rival", "non-excludable, rival", "excludable, non-rival", "non-excludable, non-rival"], answer: "excludable, non-rival" },
+                { q: "The impact of one person's actions on the well-being of a bystander is:", options: ["actor-observer effect", "externality", "internality", "benefit principle"], answer: "externality" },
+                { q: "A simplified description of a system or process is a:", options: ["equation", "model", "philosophy", "process dynamics"], answer: "model" },
+                { q: "A measure of happiness or satisfaction is:", options: ["utility", "safety", "credits", "value"], answer: "utility" },
+                { q: "Clothing is a:", options: ["private good", "club good", "common resource", "public good"], answer: "private good" },
+                { q: "Private goods are:", options: ["excludable, rival", "non-excludable, rival", "excludable, non-rival", "non-excludable, non-rival"], answer: "excludable, rival" }
+            ]},
+            6: { title: "Week 6: Supply & Demand", icon: "trending-up", questions: [
+                { q: "The claim that the quantity supplied of a good rises when the price rises is:", options: ["law of demand", "law of supply", "law of quantity demanded", "law of quantity supplied"], answer: "law of supply" },
+                { q: "A table that shows the relationship between price and quantity supplied is:", options: ["demand table", "demand schedule", "supply table", "supply schedule"], answer: "supply schedule" },
+                { q: "Coffee powder and sugar are:", options: ["substitutes", "complements", "club goods", "public goods"], answer: "complements" },
+                { q: "A graph of the relationship between price and quantity demanded is:", options: ["demand curve", "supply curve", "Laffer curve", "Phillips curve"], answer: "demand curve" },
+                { q: "Measure of how much quantity supplied responds to a change in price is:", options: ["price elasticity of demand", "income elasticity of demand", "cross-price elasticity of demand", "price elasticity of supply"], answer: "price elasticity of supply" },
+                { q: "Good for which an increase in income leads to an increase in demand is:", options: ["normal good", "inferior good", "Giffen good", "common good"], answer: "normal good" },
+                { q: "Measure of how much quantity demanded responds to price of another good is:", options: ["price elasticity of demand", "income elasticity of demand", "cross-price elasticity of demand", "price elasticity of supply"], answer: "cross-price elasticity of demand" },
+                { q: "A graph of the relationship between the price and the quantity supplied is:", options: ["demand curve", "supply curve", "Laffer curve", "Phillips curve"], answer: "supply curve" },
+                { q: "A legal minimum on the price at which a good can be sold is:", options: ["price ceiling", "price floor", "selling ceiling", "selling floor"], answer: "price floor" },
+                { q: "A table that shows the relationship between price and quantity demanded is:", options: ["demand table", "demand schedule", "supply table", "supply schedule"], answer: "demand schedule" }
+            ]},
+            7: { title: "Week 7: Surplus", icon: "pie-chart", questions: [
+                { q: "Laffer curve is the relationship between:", options: ["inflation and unemployment", "tax size and tax revenue", "producer surplus and consumer surplus", "tax size and deadweight loss"], answer: "tax size and tax revenue" },
+                { q: "Amount a buyer is willing to pay minus amount actually paid is:", options: ["consumer surplus", "producer surplus", "total surplus", "deadweight loss"], answer: "consumer surplus" },
+                { q: "Fall in total surplus that results from a market distortion like a tax is:", options: ["consumer surplus", "producer surplus", "total surplus", "deadweight loss"], answer: "deadweight loss" },
+                { q: "Amount a seller is paid minus seller's cost is:", options: ["consumer surplus", "producer surplus", "total surplus", "deadweight loss"], answer: "producer surplus" },
+                { q: "The maximum amount that a buyer will pay for a good is:", options: ["willingness to pay", "market demand", "marginal value", "buyer's surplus"], answer: "willingness to pay" },
+                { q: "Imposition of tariff:", options: ["increases producer surplus and gov revenue", "increases consumer surplus and gov revenue", "increases producer surplus, consumer surplus and gov revenue", "increases total surplus"], answer: "increases producer surplus and gov revenue" },
+                { q: "The area between the supply curve and the price is an indicator of:", options: ["consumer surplus", "producer surplus", "total surplus", "deadweight loss"], answer: "producer surplus" },
+                { q: "Value to buyers - Cost to sellers is:", options: ["consumer surplus", "producer surplus", "total surplus", "deadweight loss"], answer: "total surplus" },
+                { q: "The price of a good that prevails in the world market is the:", options: ["export price", "import price", "world price", "domestic price"], answer: "world price" },
+                { q: "The area between the demand curve and the price is an indicator of:", options: ["consumer surplus", "producer surplus", "total surplus", "deadweight loss"], answer: "consumer surplus" }
+            ]},
+            8: { title: "Week 8: Production", icon: "factory", questions: [
+                { q: "For a positive production externality:", options: ["SMC = PMC", "SMC = PMC - MD", "SMC = PMC + MD", "SMC = PMC / MD"], answer: "SMC = PMC - MD" },
+                { q: "Direct benefit to consumers of consuming an additional unit is:", options: ["private marginal cost (PMC)", "social marginal cost (SMC)", "private marginal benefit (PMB)", "social marginal benefit (SMB)"], answer: "private marginal benefit (PMB)" },
+                { q: "Playing with loud music is an example of:", options: ["negative production externality", "positive production externality", "negative consumption externality", "positive consumption externality"], answer: "negative consumption externality" },
+                { q: "When an individual's consumption reduces well-being of others without compensation:", options: ["negative production externality", "positive production externality", "negative consumption externality", "positive consumption externality"], answer: "negative consumption externality" },
+                { q: "When a firm's production reduces well-being of others without compensation:", options: ["negative production externality", "positive production externality", "negative consumption externality", "positive consumption externality"], answer: "negative production externality" },
+                { q: "Vaccination is an example of:", options: ["negative production externality", "positive production externality", "negative consumption externality", "positive consumption externality"], answer: "positive consumption externality" },
+                { q: "When a firm's production increases well-being of others without compensation:", options: ["negative production externality", "positive production externality", "negative consumption externality", "positive consumption externality"], answer: "positive production externality" },
+                { q: "For a positive consumption externality:", options: ["SMB = PMB", "SMB = PMB - MD", "SMB = PMB + MD", "SMB = PMB / MD"], answer: "SMB = PMB + MD" },
+                { q: "For a negative consumption externality:", options: ["SMB = PMB", "SMB = PMB - MD", "SMB = PMB + MD", "SMB = PMB / MD"], answer: "SMB = PMB - MD" },
+                { q: "For a negative production externality:", options: ["SMC = PMC + MD", "SMC = PMC - MD", "SMC = PMC", "SMC = PMC / MD"], answer: "SMC = PMC + MD" }
+            ]},
+            9: { title: "Week 9: Firm Behavior", icon: "briefcase", questions: [
+                { q: "Increase in total cost that arises from extra unit of production is:", options: ["fixed costs", "variable costs", "marginal costs", "sunk costs"], answer: "marginal costs" },
+                { q: "Increase in output that arises from an additional unit of input is:", options: ["marginal product", "marginal profit", "marginal loss", "marginal cost"], answer: "marginal product" },
+                { q: "A monopoly firm's profit is given by:", options: ["(Price - ATC) x Q", "(Price - Q) x ATC", "(ATC - Q) x Price", "(Price + Q) - ATC"], answer: "(Price - ATC) x Q" },
+                { q: "Which of the following is true for a competitive firm?", options: ["P = MR", "P = MC", "MR = MC", "All of these"], answer: "All of these" },
+                { q: "Relationship between quantity of inputs used and quantity of output produced is:", options: ["Laffer curve", "Phillips curve", "Production function", "Output function"], answer: "Production function" },
+                { q: "Total revenue minus total cost, including explicit and implicit costs is:", options: ["economic profit", "accounting profit", "profit", "loss"], answer: "economic profit" },
+                { q: "When cost of production for a single firm is much lesser than for competitive firms:", options: ["natural monopoly", "artificial monopoly", "oligopoly", "duopoly"], answer: "natural monopoly" },
+                { q: "Which of the following is true for a monopoly?", options: ["P > MR", "MR > MC", "MC > P", "MC > MR"], answer: "P > MR" },
+                { q: "Costs that do not vary with the quantity of output produced are:", options: ["fixed costs", "variable costs", "marginal costs", "sunk costs"], answer: "fixed costs" },
+                { q: "Total revenue minus total explicit cost is:", options: ["economic profit", "accounting profit", "profit", "loss"], answer: "accounting profit" }
+            ]},
+            10: { title: "Week 10: Philosophy", icon: "scale", questions: [
+                { q: "Philosophy where gov chooses policies deemed just by impartial observer:", options: ["Utilitarianism", "Liberalism", "Libertarianism", "Socialism"], answer: "Liberalism" },
+                { q: "Severe deprivation of basic human needs including food, safe drinking water, etc:", options: ["absolute poverty", "relative poverty", "median poverty", "poverty line"], answer: "absolute poverty" },
+                { q: "Absolute level of income set by gov below which family is in poverty:", options: ["deprivation line", "poverty line", "deprivation index", "poverty index"], answer: "poverty line" },
+                { q: "Above-equilibrium wages paid by firms to increase worker productivity:", options: ["compensating wage", "efficiency wage", "productivity wage", "retention wage"], answer: "efficiency wage" },
+                { q: "Difference in wages that arises to offset nonmonetary characteristics of jobs:", options: ["differentiating differential", "compensating differential", "differentiating integral", "compensating integral"], answer: "compensating differential" },
+                { q: "Absolute poverty depends:", options: ["on income but not on access to social services", "not on income but on access to social services", "on income and on access to social services", "neither on income nor on access to social services"], answer: "on income and on access to social services" },
+                { q: "Condition where household income is lower than median income in that country:", options: ["absolute poverty", "relative poverty", "median poverty", "poverty line"], answer: "relative poverty" },
+                { q: "The 'equipment and structures used to produce goods and services' is:", options: ["tools", "machinery", "capital", "factors of production"], answer: "capital" },
+                { q: "For a competitive and profit maximizing firm:", options: ["each factor's rental price = value of marginal product", "each factor's rental price < value of marginal product", "each factor's rental price > value of marginal product", "each factor's rental price = value of average product"], answer: "each factor's rental price = value of marginal product" },
+                { q: "Philosophy where gov punishes crimes but doesn't redistribute income:", options: ["Utilitarianism", "Liberalism", "Libertarianism", "Socialism"], answer: "Libertarianism" }
+            ]},
+            11: { title: "Week 11: Information", icon: "fingerprint", questions: [
+                { q: "Situation where buyer is at risk of being sold goods of low quality:", options: ["adverse selection", "moral hazard", "asymmetric information", "none of these"], answer: "adverse selection" },
+                { q: "Change in consumption when price change moves consumer to higher/lower curve:", options: ["income effect", "substitution effect", "indifference effect", "budget effect"], answer: "income effect" },
+                { q: "Which of these is not a property of indifference curves?", options: ["Higher preferred to lower", "Downward sloping", "Cross at right angles", "Bowed inward"], answer: "Cross at right angles" },
+                { q: "Action taken by informed party to reveal private information to uninformed party:", options: ["signaling", "screening", "informing", "heuristics"], answer: "signaling" },
+                { q: "Part of actual resources that can be developed profitably in the future are:", options: ["potential resources", "actual resources", "reserve resources", "stock resources"], answer: "reserve resources" },
+                { q: "Curve showing bundles that give consumer same level of satisfaction:", options: ["consumption curve", "satisfaction curve", "indifference curve", "budget curve"], answer: "indifference curve" },
+                { q: "Rate at which a consumer is willing to trade one good for another:", options: ["marginal rate of substitution", "marginal rate of exchange", "marginal rate of trade", "marginal rate of transfer"], answer: "marginal rate of substitution" },
+                { q: "Ram is not cleaning properly, so Ram must also be lazy. This is:", options: ["confirmation bias", "halo effect", "horn effect", "priming"], answer: "horn effect" },
+                { q: "Shortcut justifying increased investment because prior investment was made:", options: ["affect heuristic", "availability heuristic", "effort heuristic", "escalation of commitment"], answer: "escalation of commitment" },
+                { q: "Those resources that may be used in the future are:", options: ["potential resources", "actual resources", "reserve resources", "stock resources"], answer: "potential resources" }
+            ]},
+            12: { title: "Week 12: Conservation", icon: "heart-handshake", questions: [
+                { q: "Cryo-banking is an example of:", options: ["in-situ conservation", "ex-situ conservation", "in-situ preservation", "ex-situ preservation"], answer: "ex-situ conservation" },
+                { q: "Biological control of pest populations is an example of:", options: ["provisioning service", "regulating service", "supporting service", "cultural service"], answer: "regulating service" },
+                { q: "Zoo is an example of:", options: ["in-situ conservation", "ex-situ conservation", "in-situ preservation", "ex-situ preservation"], answer: "ex-situ conservation" },
+                { q: "Elephant regulates ecosystem and people relate to it. It's called:", options: ["umbrella species", "keystone species", "flagship species", "all of the above"], answer: "all of the above" },
+                { q: "Wildlife includes any animal which forms part of any ______ (fill in the blank):", options: ["ecosystem", "state", "country", "habitat"], answer: "habitat" },
+                { q: "Tiger regulates ecosystem through controlling herbivores. It's called:", options: ["umbrella species", "keystone species", "flagship species", "all of the above"], answer: "all of the above" },
+                { q: "Cost of impacts caused by emission of carbon dioxide is:", options: ["cost of carbon", "economic cost of carbon", "social cost of carbon", "cultural cost of carbon"], answer: "social cost of carbon" },
+                { q: "Soil formation is an example of:", options: ["provisioning service", "regulating service", "supporting service", "cultural service"], answer: "supporting service" },
+                { q: " witness orchids in Arunachal Pradesh classify context as:", options: ["umbrella species", "keystone species", "flagship species", "indicator species"], answer: "flagship species" },
+                { q: "Nutrient cycling is an example of:", options: ["provisioning service", "regulating service", "supporting service", "cultural service"], answer: "supporting service" }
+            ]}
+        };
+
+        let state = {
+            selectedWeek: null,
+            quizQuestions: [],
+            userAnswers: {},
+            markedForReview: [], // New Feature
+            isSubmitted: false,
+            timeElapsed: 0,
+            isTimerActive: false,
+            isShuffled: false,
+            showSidebar: false,
+            customSelection: []
+        };
+
+        let timerInterval = null;
+
+        function shuffleArray(array) {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
             }
-        ];
-
-        let userAnswers = {};
-        let score = 0;
-        let totalQuestions = 0;
-        let startTime = Date.now();
-
-        // Initialize Timer
-        function updateTimer() {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
-            const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
-            const s = String(elapsed % 60).padStart(2, '0');
-            const timeStr = `${h}:${m}:${s}`;
-            document.getElementById('timer-text').textContent = timeStr;
-            document.getElementById('mobile-timer').textContent = timeStr;
-        }
-        setInterval(updateTimer, 1000);
-
-        // Render Sidebar
-        function renderSidebar() {
-            const nav = document.getElementById('sidebar-nav');
-            nav.innerHTML = '<div class="text-xs font-semibold text-slate-500 mt-4 mb-2 ml-2">ASSIGNMENTS</div>';
-            
-            quizData.forEach((week, index) => {
-                const btn = document.createElement('button');
-                btn.onclick = () => scrollToWeek(week.id);
-                btn.className = 'nav-link w-full text-left p-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-slate-300';
-                btn.innerHTML = `
-                    <span class="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-400 text-sm font-bold">${index}</span>
-                    <span class="text-sm truncate">${week.title}</span>
-                `;
-                nav.appendChild(btn);
-            });
+            return newArr;
         }
 
-        // Render Quiz Sections
+        function toggleCustomWeek(num) {
+            const idx = state.customSelection.indexOf(num);
+            if (idx > -1) {
+                state.customSelection.splice(idx, 1);
+            } else {
+                state.customSelection.push(num);
+            }
+            render();
+        }
+
+        function toggleMarkForReview(idx) {
+            const pos = state.markedForReview.indexOf(idx);
+            if (pos > -1) {
+                state.markedForReview.splice(pos, 1);
+            } else {
+                state.markedForReview.push(idx);
+            }
+            render();
+        }
+
+        function startQuiz(weekKey) {
+            let rawQuestions = [];
+            let sessionTitle = "";
+
+            if (weekKey === 'all') {
+                Object.keys(QUIZ_DATA).forEach(k => rawQuestions = [...rawQuestions, ...QUIZ_DATA[k].questions]);
+                sessionTitle = "Mega Quiz: Semester Stream";
+            } else if (Array.isArray(weekKey)) {
+                weekKey.forEach(k => rawQuestions = [...rawQuestions, ...QUIZ_DATA[k].questions]);
+                sessionTitle = "Custom Review: " + weekKey.map(w => "W"+w).join(", ");
+            } else {
+                rawQuestions = QUIZ_DATA[weekKey].questions;
+                sessionTitle = QUIZ_DATA[weekKey].title;
+            }
+
+            let prepared = rawQuestions.map(q => ({
+                ...q,
+                displayOptions: state.isShuffled ? shuffleArray(q.options) : q.options
+            }));
+
+            if (state.isShuffled) prepared = shuffleArray(prepared);
+
+            state.selectedWeek = weekKey;
+            state.quizQuestions = prepared;
+            state.userAnswers = {};
+            state.markedForReview = [];
+            state.isSubmitted = false;
+            state.timeElapsed = 0;
+            state.isTimerActive = true;
+            state.showSidebar = false;
+            state.sessionTitle = sessionTitle;
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                state.timeElapsed++;
+                const timerEl = document.getElementById('timer-val');
+                if (timerEl) timerEl.innerText = formatTime(state.timeElapsed);
+            }, 1000);
+
+            render();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function formatTime(s) {
+            return `${Math.floor(s/60)}:${(s%60).toString().padStart(2, '0')}`;
+        }
+
+        function handleAnswer(qIdx, option) {
+            if (state.isSubmitted) return;
+            state.userAnswers[qIdx] = option;
+            render();
+        }
+
+        function submitQuiz() {
+            state.isSubmitted = true;
+            state.isTimerActive = false;
+            clearInterval(timerInterval);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            render();
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            if (!state.selectedWeek) {
+                app.innerHTML = renderHome();
+            } else {
+                app.innerHTML = renderQuiz();
+            }
+            lucide.createIcons();
+        }
+
+        function renderHome() {
+            return `
+            <div class="max-w-6xl mx-auto pt-20 px-6 pb-20 animate-in fade-in duration-700">
+                <header class="text-center mb-16">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-violet-500/10 border border-violet-500/20 rounded-full text-violet-400 text-xs font-bold tracking-widest uppercase mb-6">
+                        <i data-lucide="sparkles" class="w-3 h-3"></i> Conservation Economics Hub
+                    </div>
+                    <h1 class="text-6xl font-black text-white mb-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-500">
+                        Knowledge Repository
+                    </h1>
+                    <p class="text-slate-400 text-xl max-w-2xl mx-auto leading-relaxed">
+                        Master the principles of sustainability, political philosophy, and ecosystem services.
+                    </p>
+                </header>
+
+                <div class="glass rounded-[3rem] p-10 border-white/10 mb-10">
+                    <div class="flex flex-col md:flex-row items-center justify-between mb-12 pb-8 border-b border-white/5 gap-8">
+                        <div class="flex items-center gap-5">
+                            <div class="p-4 bg-violet-600/20 rounded-2xl border border-violet-500/30">
+                                <i data-lucide="sliders" class="w-6 h-6 text-violet-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-white">Exam Parameters</h2>
+                                <p class="text-slate-500 text-sm font-medium">Configure your testing environment</p>
+                            </div>
+                        </div>
+                        
+                        <div onclick="state.isShuffled = !state.isShuffled; render()" class="flex items-center gap-4 bg-white/5 p-4 px-6 rounded-2xl border border-white/10 cursor-pointer hover:bg-white/10 transition-all group">
+                            <div class="flex flex-col items-end">
+                                <span class="text-sm font-bold text-white">Shuffle Mode</span>
+                                <span class="text-[10px] text-slate-500 font-black uppercase">${state.isShuffled ? 'Randomized' : 'Sequential'}</span>
+                            </div>
+                            <div class="relative w-12 h-6 rounded-full transition-all duration-300 ${state.isShuffled ? 'bg-violet-600 shadow-[0_0_15px_rgba(139,92,246,0.4)]' : 'bg-slate-700'}">
+                                <div class="absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${state.isShuffled ? 'translate-x-6' : ''}"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-12 bg-white/5 p-8 rounded-[2.5rem] border border-white/5">
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Targeted Selection</h3>
+                                <p class="text-slate-500 text-sm">Select specific weeks to focus your review session</p>
+                            </div>
+                            ${state.customSelection.length > 0 ? `
+                                <button onclick="startQuiz(state.customSelection)" class="px-8 py-3 bg-violet-600 text-white rounded-2xl font-black text-sm hover:bg-violet-500 transition-all flex items-center gap-2 shadow-lg shadow-violet-600/20">
+                                    Start Selected Review (${state.customSelection.length})
+                                    <i data-lucide="play" class="w-4 h-4"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            ${Object.keys(QUIZ_DATA).map(num => `
+                                <button onclick="toggleCustomWeek(${num})" 
+                                        class="week-chip px-5 py-3 rounded-2xl border border-white/10 bg-white/5 text-sm font-bold transition-all hover:border-violet-500/50 ${state.customSelection.includes(Number(num)) ? 'active' : 'text-slate-400'}">
+                                    Week ${num}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <button onclick="startQuiz('all')" class="col-span-1 md:col-span-2 group relative week-card p-10 border border-violet-500/30 rounded-[2.5rem] text-left">
+                            <div class="relative z-10 h-full flex flex-col justify-between">
+                                <div class="mb-12">
+                                    <div class="w-16 h-16 bg-violet-600 rounded-[1.5rem] flex items-center justify-center text-white mb-8 shadow-2xl shadow-violet-600/30 week-icon-container">
+                                        <i data-lucide="layers" class="w-8 h-8"></i>
+                                    </div>
+                                    <span class="text-[10px] font-black text-violet-400 uppercase tracking-widest bg-violet-500/10 px-3 py-1 rounded-full border border-violet-500/20">Comprehensive Exam</span>
+                                    <h3 class="text-4xl font-black text-white mt-4 tracking-tight">Semester Mega Quiz</h3>
+                                    <p class="text-slate-400 mt-4 text-lg leading-relaxed max-w-md">Every single objective from the 13-week syllabus merged into a master review stream.</p>
+                                </div>
+                                <div class="flex items-center justify-between text-violet-400 font-bold mt-auto">
+                                    <span class="text-xs uppercase tracking-[0.2em]">Begin Full Evaluation</span>
+                                    <div class="w-12 h-12 rounded-full border border-violet-500/30 flex items-center justify-center group-hover:bg-violet-600 group-hover:text-white transition-all">
+                                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </button>
+
+                        ${Object.keys(QUIZ_DATA).map(num => `
+                            <button onclick="startQuiz(${num})" class="group week-card p-8 border border-white/10 rounded-[2.2rem] text-left flex flex-col justify-between h-[320px]">
+                                <div class="relative z-10">
+                                    <div class="flex justify-between items-start mb-8">
+                                        <div class="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center text-slate-300 border border-white/10 week-icon-container">
+                                            <i data-lucide="${QUIZ_DATA[num].icon || 'book'}" class="w-5 h-5 group-hover:text-violet-400 transition-colors"></i>
+                                        </div>
+                                        <div class="px-3 py-1 rounded-lg bg-white/5 border border-white/5 text-[10px] font-black text-slate-500 uppercase tracking-tighter">
+                                            W${num}
+                                        </div>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-white group-hover:text-violet-300 transition-colors leading-tight tracking-tight">
+                                        ${QUIZ_DATA[num].title.split(': ')[1]}
+                                    </h3>
+                                </div>
+                                
+                                <div class="relative z-10 flex items-center justify-between pt-6 border-t border-white/5">
+                                    <div class="flex flex-col">
+                                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Questions</span>
+                                        <span class="text-sm font-bold text-white">10 Objectives</span>
+                                    </div>
+                                    <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-violet-500/50 group-hover:bg-violet-500/10 group-hover:text-violet-300 transition-all">
+                                        <i data-lucide="chevron-right" class="w-5 h-5 group-hover:translate-x-0.5 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>`;
+        }
+
         function renderQuiz() {
-            const container = document.getElementById('quiz-container');
-            container.innerHTML = '';
-            totalQuestions = 0;
+            const answered = Object.keys(state.userAnswers).length;
+            const progress = (answered / state.quizQuestions.length) * 100;
+            const title = state.sessionTitle;
 
-            quizData.forEach((week, wIdx) => {
-                const section = document.createElement('section');
-                section.id = week.id;
-                section.className = 'glass p-8 space-y-8';
+            let scoreCard = '';
+            if (state.isSubmitted) {
+                let correct = 0;
+                state.quizQuestions.forEach((q, i) => { if (state.userAnswers[i] === q.answer) correct++; });
+                const pct = Math.round((correct/state.quizQuestions.length)*100);
                 
-                section.innerHTML = `
-                    <div class="border-b border-white/10 pb-4 mb-8">
-                        <h3 class="text-2xl font-bold text-violet-300">${w
+                scoreCard = `
+                <div class="mt-8 mb-16 animate-in zoom-in-95 duration-700">
+                    <div class="glass rounded-[3.5rem] p-12 md:p-20 text-center relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-violet-500 to-transparent"></div>
+                        <div class="inline-flex items-center justify-center w-32 h-32 bg-violet-500/20 text-violet-400 border border-violet-500/30 rounded-[2.5rem] mb-8">
+                            <i data-lucide="trophy" class="w-16 h-16"></i>
+                        </div>
+                        <h2 class="text-5xl font-black text-white mb-4">Results Matrix</h2>
+                        <p class="text-slate-400 text-lg mb-12">Targeted review analysis complete.</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                            <div class="bg-white/5 p-8 rounded-3xl border border-white/5">
+                                <span class="block text-4xl font-black text-violet-400 mb-2">${correct}/${state.quizQuestions.length}</span>
+                                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Points Secured</span>
+                            </div>
+                            <div class="bg-white/5 p-8 rounded-3xl border border-white/5">
+                                <span class="block text-4xl font-black text-white mb-2">${pct}%</span>
+                                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Efficiency</span>
+                            </div>
+                            <div class="bg-white/5 p-8 rounded-3xl border border-white/5">
+                                <span class="block text-4xl font-black text-pink-400 mb-2">${formatTime(state.timeElapsed)}</span>
+                                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Review Time</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-16 flex flex-wrap justify-center gap-4">
+                            <button onclick="startQuiz(state.selectedWeek)" class="px-10 py-4 bg-violet-600 text-white rounded-2xl font-bold hover:bg-violet-500 transition-all flex items-center gap-2">
+                                <i data-lucide="refresh-ccw" class="w-5 h-5"></i> Retake Batch
+                            </button>
+                            <button onclick="state.selectedWeek = null; render()" class="px-10 py-4 bg-white/10 text-white rounded-2xl font-bold hover:bg-white/20 border border-white/10 transition-all flex items-center gap-2">
+                                <i data-lucide="home" class="w-5 h-5"></i> Library
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            return `
+            <div id="side-menu" class="fixed top-0 left-0 h-full w-80 glass z-[100] transition-transform duration-500 -translate-x-full border-y-0 border-l-0 ${state.showSidebar ? 'sidebar-active' : ''}">
+                <div class="p-8 border-b border-white/10 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-white">Objective Index</h3>
+                    <button onclick="state.showSidebar = false; render()" class="text-slate-500 hover:text-white"><i data-lucide="x"></i></button>
+                </div>
+                
+                <!-- Status Legend -->
+                <div class="px-8 py-6 border-b border-white/5 grid grid-cols-2 gap-3 text-[10px] font-black uppercase tracking-widest">
+                    <div class="flex items-center gap-2 text-blue-400">
+                        <div class="w-3 h-3 rounded-full bg-blue-500/30 border border-blue-500/50"></div>
+                        Attempted
+                    </div>
+                    <div class="flex items-center gap-2 text-amber-400">
+                        <div class="w-3 h-3 rounded-full bg-amber-500/30 border border-amber-500/50"></div>
+                        Review
+                    </div>
+                    <div class="flex items-center gap-2 text-slate-500">
+                        <div class="w-3 h-3 rounded-full bg-white/10 border border-white/20"></div>
+                        Not Touched
+                    </div>
+                </div>
+
+                <div class="p-4 overflow-y-auto max-h-[calc(100vh-180px)] space-y-2">
+                    ${state.quizQuestions.map((q, i) => {
+                        const isAnswered = state.userAnswers[i] !== undefined;
+                        const isMarked = state.markedForReview.includes(i);
+                        
+                        let btnClass = "bg-white/5 text-slate-400 border-white/5";
+                        if (isMarked) btnClass = "bg-amber-500/20 text-amber-300 border-amber-500/30";
+                        else if (isAnswered) btnClass = "bg-blue-600/20 text-blue-300 border-blue-500/30";
+
+                        return `
+                        <button onclick="document.getElementById('q-${i}').scrollIntoView({behavior:'smooth'}); state.showSidebar = false; render()" 
+                                class="w-full p-3 rounded-xl border text-left flex items-center gap-3 transition-all hover:bg-white/10 ${btnClass}">
+                            <span class="w-7 h-7 rounded-lg bg-black/40 flex items-center justify-center text-[10px] font-bold border border-white/5">${i+1}</span>
+                            <span class="text-xs truncate font-medium flex-1">${q.q}</span>
+                            ${isAnswered ? '<i data-lucide="check" class="w-3 h-3 text-blue-400"></i>' : ''}
+                            ${isMarked ? '<i data-lucide="bookmark" class="w-3 h-3 text-amber-400 fill-amber-400"></i>' : ''}
+                        </button>`;
+                    }).join('')}
+                </div>
+            </div>
+
+            <nav class="sticky top-0 z-[60] bg-[#020617]/80 backdrop-blur-xl border-b border-white/10 px-6 py-4">
+                <div class="max-w-6xl mx-auto flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <button onclick="state.showSidebar = true; render()" class="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                            <i data-lucide="menu" class="w-5 h-5"></i>
+                        </button>
+                        <div class="hidden sm:block">
+                            <span class="text-[10px] font-black text-violet-500 uppercase tracking-widest block">Semester Mastery</span>
+                            <h2 class="text-sm font-bold text-white">${title}</h2>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-900/80 border border-white/10 px-6 py-2.5 rounded-2xl font-mono font-bold text-violet-400 shadow-xl">
+                        <i data-lucide="timer" class="w-5 h-5 animate-pulse"></i>
+                        <span class="text-xl" id="timer-val">${formatTime(state.timeElapsed)}</span>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="max-w-4xl mx-auto w-full px-6 py-12 pb-32">
+                ${!state.isSubmitted ? `
+                <div class="sticky top-[90px] z-40 glass p-5 rounded-3xl mb-12 flex items-center justify-between gap-10">
+                    <div class="flex-1">
+                        <div class="flex justify-between text-[10px] font-black uppercase text-slate-500 mb-2">
+                            <span>Analysis Status</span>
+                            <span>${Math.round(progress)}% Evaluated</span>
+                        </div>
+                        <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden border border-white/5">
+                            <div class="bg-violet-500 h-full transition-all duration-700" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                    <div class="hidden sm:block text-right">
+                        <span class="text-2xl font-black text-white">${answered} / ${state.quizQuestions.length}</span>
+                    </div>
+                </div>` : scoreCard}
+
+                <div class="space-y-10">
+                    ${state.quizQuestions.map((q, idx) => {
+                        const activeAns = state.userAnswers[idx];
+                        const isMarked = state.markedForReview.includes(idx);
+                        const isCorrect = state.isSubmitted && activeAns === q.answer;
+                        const border = state.isSubmitted ? (isCorrect ? 'border-green-500/30' : 'border-red-500/30') : 'border-white/10';
+
+                        return `
+                        <div id="q-${idx}" class="glass rounded-[2.5rem] border transition-all duration-500 overflow-hidden ${border}">
+                            <div class="p-10 md:p-14">
+                                <div class="flex items-center justify-between mb-6">
+                                    <div class="flex items-center gap-4">
+                                        <span class="w-10 h-10 bg-violet-600/20 text-violet-400 border border-violet-500/20 rounded-xl flex items-center justify-center font-bold">${idx + 1}</span>
+                                        <span class="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Objective Reference</span>
+                                    </div>
+                                    ${!state.isSubmitted ? `
+                                        <button onclick="toggleMarkForReview(${idx})" class="flex items-center gap-2 px-4 py-2 rounded-xl border transition-all ${isMarked ? 'bg-amber-500/20 border-amber-500/40 text-amber-300' : 'bg-white/5 border-white/10 text-slate-500 hover:text-slate-300'}">
+                                            <i data-lucide="bookmark" class="w-4 h-4 ${isMarked ? 'fill-amber-400' : ''}"></i>
+                                            <span class="text-[10px] font-black uppercase tracking-widest">${isMarked ? 'Reviewing' : 'Review'}</span>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                <h3 class="text-2xl md:text-3xl font-bold text-white leading-tight">${q.q}</h3>
+                            </div>
+                            <div class="bg-black/20 p-8 md:p-10 grid grid-cols-1 gap-4">
+                                ${q.displayOptions.map(opt => {
+                                    const selected = activeAns === opt;
+                                    const actualCorrect = opt === q.answer;
+                                    
+                                    let cls = "border-white/5 bg-white/5 hover:border-white/20";
+                                    let dot = "border-slate-700";
+
+                                    if (selected) {
+                                        cls = "border-violet-500 bg-violet-500/10";
+                                        dot = "border-violet-500 bg-violet-500";
+                                    }
+
+                                    if (state.isSubmitted) {
+                                        if (actualCorrect) {
+                                            cls = "border-green-500 bg-green-500/20";
+                                            dot = "border-green-500 bg-green-500";
+                                        } else if (selected && !actualCorrect) {
+                                            cls = "border-red-500 bg-red-500/20";
+                                            dot = "border-red-500 bg-red-500";
+                                        }
+                                    }
+
+                                    return `
+                                    <button onclick="handleAnswer(${idx}, '${opt.replace(/'/g, "\\'")}')" 
+                                            class="option-btn w-full text-left p-6 rounded-3xl border flex items-center justify-between group ${cls}"
+                                            ${state.isSubmitted ? 'disabled' : ''}>
+                                        <span class="text-lg font-medium ${selected ? 'text-white' : 'text-slate-400'}">${opt}</span>
+                                        <div class="w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center ${dot}">
+                                            <i data-lucide="check" class="w-4 h-4 text-white ${selected || (state.isSubmitted && actualCorrect) ? 'block' : 'hidden'}"></i>
+                                        </div>
+                                    </button>`;
+                                }).join('')}
+                            </div>
+                            ${state.isSubmitted ? `
+                                <div class="px-10 py-5 border-t ${isCorrect ? 'bg-green-500/5 text-green-400' : 'bg-red-500/5 text-red-400'} text-xs font-bold flex items-center gap-3">
+                                    <i data-lucide="${isCorrect ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i>
+                                    ${isCorrect ? 'Accurate Response Verified' : 'Standard Response: ' + q.answer}
+                                </div>
+                            ` : ''}
+                        </div>`;
+                    }).join('')}
+                </div>
+
+                ${!state.isSubmitted ? `
+                <div class="pt-24 text-center">
+                    <button onclick="submitQuiz()" class="group relative inline-flex items-center gap-4 px-16 py-6 bg-violet-600 hover:bg-violet-500 text-white rounded-full font-black text-xl shadow-[0_20px_50px_rgba(139,92,246,0.3)] transition-all hover:-translate-y-1">
+                        Finalize Sequence
+                        <i data-lucide="check-circle" class="w-8 h-8 group-hover:scale-110 transition-transform"></i>
+                    </button>
+                    <p class="mt-4 text-slate-500 text-xs font-black uppercase tracking-widest">Verify all selections before processing</p>
+                </div>` : ''}
+            </div>`;
+        }
+
+        render();
+    </script>
+</body>
+</html>
