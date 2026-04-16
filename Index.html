@@ -363,7 +363,8 @@
 
         function render() {
             const app = document.getElementById('app');
-            if (!state.selectedWeek) {
+            // FIX: Use strict null check because Week 0 is 0, which is "falsy" in JavaScript.
+            if (state.selectedWeek === null) {
                 app.innerHTML = renderHome();
             } else {
                 app.innerHTML = renderQuiz();
